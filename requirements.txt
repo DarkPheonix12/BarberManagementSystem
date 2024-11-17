@@ -1,0 +1,8 @@
+streamlit
+gspread
+google-auth
+oauth2client
+pandas
+requests
+pywhatkit
+streamlit-option-menu
