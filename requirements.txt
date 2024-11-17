@@ -7,3 +7,4 @@ requests
 pywhatkit
 streamlit-option-menu
 pyyaml
+bcrypt
