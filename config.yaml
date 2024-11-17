@@ -1,0 +1,17 @@
+credentials:
+  usernames:
+    jsmith:
+      email: jsmith@gmail.com
+      name: John Smith
+      password: $2b$12$eGNF7OSxsIyzwjPGHVGaZu53.8T2fM0O0pYeM9xwxH9Po8Pzwga.q # Hashed value for "abc"
+    rbriggs:
+      email: rbriggs@gmail.com
+      name: Rebecca Briggs
+      password: $2b$12$rbF/DoiQkEsrqpGXGn/FNuwsMsvjnLz.VkBphNb2TSZCpYjIy8LX2 # Hashed value for "def"
+cookie:
+  expiry_days: 30
+  key: random_signature_key # Must be a string
+  name: random_cookie_name
+preauthorized:
+  emails:
+    - melsby@gmail.com

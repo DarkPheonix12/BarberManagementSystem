@@ -1,0 +1,127 @@
+services_data = [
+        {"service": "KERATIN (FEMALE)", "amount": 4200, "discount": "30%"},
+        {"service": "KERATIN (MALE)", "amount": 2100, "discount": "30%"},
+        {"service": "SMOOTHENING (FEMALE)", "amount": 4200, "discount": "30%"},
+        {"service": "SMOOTHENING (MALE)", "amount": 1400, "discount": "30%"},
+        {"service": "SCALP TREATMENT", "amount": None, "discount": None},
+        {"service": "HOT OIL MASSAGE (MALE)", "amount": 140, "discount": "60%"},
+        {"service": "ORGAN ALOE VERA OIL (MALE)", "amount": 140, "discount": "50%"},
+        {"service": "HOT OIL MASSAGE (FEMALE)", "amount": 350, "discount": "50%"},
+        {"service": "ORGAN ALOE VERA OIL (FEMALE)", "amount": 350, "discount": "50%"},
+        {"service": "ANTI DANDRUFF TREATMENT (FEMALE)", "amount": 700, "discount": "30%"},
+        {"service": "ANTI DANDRUFF TREATMENT (MALE)", "amount": 490, "discount": "30%"},
+        {"service": "HAIR SPA L'OREAL (MALE)", "amount": 700, "discount": "30%"},
+        {"service": "HAIR SPA L'OREAL (FEMALE)", "amount": 980, "discount": "30%"},
+        {"service": "HAIR SPA (MALE)", "amount": 420, "discount": "30%"},
+        {"service": "HAIR SPA (FEMALE)", "amount": 700, "discount": "30%"},
+        {"service": "SHAMPOO CONDITIONING & STYLING (MALE)", "amount": 70, "discount": "30%"},
+        {"service": "SHAMPOO CONDITIONING & STYLING (FEMALE)", "amount": 210, "discount": "30%"},
+        {"service": "ROOT TOUCH UP (MALE)", " amount": 420, "discount": "30%"},
+        {"service": "ROOT TOUCH UP L'OREAL (MALE)", "amount": 840, "discount": "30%"},
+        {"service": "ROOT TOUCH UP AMMONIA FREE (MALE)", "amount": 1120, "discount": "30%"},
+        {"service": "ROOT TOUCH UP (FEMALE)", "amount": 700, "discount": "30%"},
+        {"service": "ROOT TOUCH UP L'OREAL (FEMALE)", "amount": 840, "discount": "30%"},
+        {"service": "ROOT TOUCH UP AMMONIA FREE (FEMALE)", "amount": 1050, "discount": "30%"},
+        {"service": "GLOBAL HAIR COLOUR (FEMALE)", "amount": 1400, "discount": "30%"},
+        {"service": "GLOBAL HAIR COLOUR LOREAL (FEMALE)", "amount": 2450, "discount": "30%"},
+        {"service": "GLOBAL HAIR COLOUR AMMONIA FREE (FEMALE)", "amount": 2800, "discount": "30%"},
+        {"service": "GLOBAL HIGHLIGHTS (MALE)", "amount": 1400, "discount": "30%"},
+        {"service": "PER STREEKS L'OREAL (MALE)", "amount": 105, "discount": "30%"},
+        {"service": "GLOBAL HIGHLIGHTS (FEMALE)", "amount": 4200, "discount": "30%"},
+        {"service": "PER STREEKS L'OREAL (FEMALE)", "amount": 140, "discount": "30%"},
+        {"service": "HAIR CUT MALE (BASIC)", "amount": 150, "discount": "25%"},
+        {"service": "HAIR CUT MALE (ADVANCE)", "amount": 175, "discount": "30%"},
+        {"service": "BEARD", "amount": 70, "discount": "30%"},
+        {"service": "CLEAN SHAVE", "amount": 105, "discount": "30%"},
+        {"service": "HAIR TRIMMING (FEMALE)", "amount": 210, "discount": "30%"},
+        {"service": "HAIR CUT ADVANCE (FEMALE)", "amount": 350, "discount": "30%"},
+        {"service": "CREATIVE HAIR CUT (FEMALE)", "amount": 420, "discount": "30%"},
+        {"service": "BABY HAIR CUT BASIC", "amount": 105, "discount": "30%"},
+        {"service": "BABY HAIR CUT ADVANCE", "amount": 150, "discount": "25%"},
+        {"service": "LOTUS BASIC FACIAL", "amount": 700, "discount": "30%"},
+        {"service": "RAAGA FACIAL", "amount": 700, "discount": "30%"},
+        {"service": "NATURES FACIAL", "amount": 700, "discount": "30%"},
+        {"service": "GLODSHEEN FACIAL", "amount": 1540, "discount": "30%"},
+        {"service": "RAGA PLATINUM FACIAL", "amount": 1400, "discount": "30%"},
+        {"service": "RAGA GOLD FACIAL", "amount": 1400, "discount": "30%"},
+        {"service": "FRESH FRUIT FACIAL", "amount": 1400, "discount": "30%"},
+        {"service": "O3+ WHITENING", "amount": 1750, "discount": "30%"},
+        {"service": "O3+ SEAWEED", "amount": 1750, "discount": "30%"},
+        {"service": "LOTUS 4 LAYERS", "amount": 1750, "discount": "30%"},
+        {"service": "CHENYI'S TAN CLEAR", "amount": 1750, "discount": "30%"},
+        {"service": "CHENYI'S SENSIGLOW", "amount": 1750, "discount": "30%"},
+        {"service": "O3+ DIAMOND", "amount": 1750, "discount": "30%"},
+        {"service": "ANTI AGEING (LOTUS)", "amount": 1750, "discount": "30%"},
+        {"service": "Cream Bleach FACE", "amount": 420, "discount": "30%"},
+        {"service": "Cream Bleach NECK", "amount": 280, "discount": "30%"},
+        {"service": "Cream Bleach UNDER ARMS", "amount": 140, "discount": "30%"},
+        {"service": "Cream Bleach FULL BACK", "amount": 560, "discount": "30%"},
+        {"service": "Cream Bleach HALF ARM", "amount": 210, "discount": "30%"},
+        {"service": "Cream Bleach FULL ARM", "amount": 420, "discount": "30%"},
+        {"service": "Cream Bleach FEET", "amount": 280, "discount": "30%"},
+        {"service": "Cream Bleach HALF LEG", "amount": 420, "discount": "30%"},
+        {"service": "Cream Bleach FULL LEG", "amount": 700, "discount": "30%"},
+        {"service": "Cream Bleach FULL BODY", "amount": 2800, "discount": "30%"},
+        {"service": "LUXURY FULL BODY MASSAGE", "amount": 2100, "discount": "30%"},
+        {"service": "CLEAN-UP O3", "amount": 700, "discount": "0%"},
+        {"service": "CLEAN-UP LOTUS", "amount": 350, "discount": "0%"},
+        {"service": "CLEAN-UP NATURES", "amount": 350, "discount": "0%"},
+        {"service": "MENICURES BASIC", "amount": 630, "discount": "30%"},
+        {"service": "MENICURES CLASSIC", "amount": 700, "discount": "30%"},
+        {"service": "MENICURES LUXURY", "amount": 1050, "discount": "30%"},
+        {"service": "PEDICURES BASIC", "amount": 700, "discount": "30%"},
+        {"service": "PEDICURES CLASSIC", "amount": 910, "discount": "30%"},
+        {"service": "PEDICURES LUXURY", "amount": 1400, "discount": "30%"}
+    ]
+
+    //yowsup (Another Open-source WhatsApp Library)
+Yowsup is a Python-based library that allows you to interact with WhatsApp using the WhatsApp protocol directly. It allows you to send messages, but please note that using this unofficial API can sometimes result in your WhatsApp account being banned if WhatsApp detects unusual activity.
+
+Setup Steps:
+Install Yowsup:
+
+Install Yowsup using pip:
+bash
+Copy code
+pip install yowsup2
+Configure Yowsup:
+
+You will need to register your phone number with Yowsup by generating an authentication token (requires a WhatsApp account and possibly a few extra steps, such as receiving an OTP).
+Send WhatsApp Messages using the Yowsup library.
+
+Here’s a simple example of how you can use it to send a WhatsApp message:
+
+python
+Copy code
+from yowsup.stacks import YowStackBuilder
+from yowsup.layers import YowLayerEvent
+from yowsup.layers.auth import AuthLayer
+from yowsup.layers.network import NetworkLayer
+from yowsup.env import YowsupEnv
+
+# Replace these with your WhatsApp credentials
+phone_number = "YOUR_PHONE_NUMBER"
+password = "YOUR_PASSWORD"
+
+class MessageLayer(AuthLayer):
+    def __init__(self):
+        super(MessageLayer, self).__init__()
+
+    def onEvent(self, event):
+        if isinstance(event, YowLayerEvent):
+            self.toLower(event)
+
+# Create and configure the stack
+stack = YowStackBuilder().pushDefaultLayers(True).build()
+stack.setCredentials((phone_number, password))
+
+# Send message
+stack.broadcastEvent(YowLayerEvent("sendMessage", "YOUR_RECIPIENT_PHONE_NUMBER", "Hello! This is an automated message."))
+stack.start()
+Pros:
+Full control over WhatsApp interactions.
+Free and open-source.
+Cons:
+More complex to set up.
+Using unofficial APIs like Yowsup can lead to account bans, as it doesn't follow WhatsApp's official API guidelines.
+//
