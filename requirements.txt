@@ -6,3 +6,4 @@ pandas
 requests
 pywhatkit
 streamlit-option-menu
+pyyaml
