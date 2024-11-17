@@ -3,8 +3,13 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import os
 import pandas as pd
-import pywhatkit as kit
 import time
+
+# Conditionally import pywhatkit if not running in a headless environment
+if os.environ.get('DISPLAY', '') != '':
+    import pywhatkit as kit
+else:
+    kit = None  # In headless mode, pywhatkit will not be available
 
 def authenticate_google_sheets():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -47,15 +52,18 @@ def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, 
 
 # Function to send WhatsApp message via pywhatkit immediately
 def send_whatsapp_message(contact, message):
-    try:
-        # Format the phone number with the country code
-        contact_with_code = f"+91{contact}"  # Assuming the number is in Indian format (adjust accordingly)
-        
-        # Send the message instantly via WhatsApp
-        kit.sendwhatmsg_instantly(contact_with_code, message)
-        st.success(f"WhatsApp message sent to {contact}!")
-    except Exception as e:
-        st.error(f"Error sending WhatsApp message: {e}")
+    if kit:  # Only send WhatsApp message if pywhatkit is available
+        try:
+            # Format the phone number with the country code
+            contact_with_code = f"+91{contact}"  # Assuming the number is in Indian format (adjust accordingly)
+            
+            # Send the message instantly via WhatsApp
+            kit.sendwhatmsg_instantly(contact_with_code, message)
+            st.success(f"WhatsApp message sent to {contact}!")
+        except Exception as e:
+            st.error(f"Error sending WhatsApp message: {e}")
+    else:
+        st.warning("WhatsApp message sending is not supported in the current environment.")
 
 def main():
     st.title("Barber Management System")
@@ -167,7 +175,7 @@ def main():
         discount_amount = 0
         if offer == "Yes" and referred_phone != "N.A":
             discount_amount = (discount_percentage / 100) * total_amount
-            st.write(f"Discount Amount: {discount_amount}")
+            st.write(f"Discount Amount: {discount_amount} ")
 
         contact_with_code = f"+91{contact}"
         time_str = time.strftime("%H:%M")
