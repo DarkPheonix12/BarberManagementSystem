@@ -1,20 +1,49 @@
 import streamlit as st
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-import os
+from google.oauth2.service_account import Credentials
 import pandas as pd
+import os
+import time
+from requests.exceptions import ConnectionError
+from google.auth.exceptions import TransportError
 
-# Function to authenticate Google Sheets
+# Retry decorator for handling specific exceptions
+def retry_on_exception(retries=3, delay=2, exceptions=(ConnectionError, TransportError)):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            for attempt in range(retries):
+                try:
+                    return func(*args, **kwargs)
+                except exceptions as e:
+                    if attempt < retries - 1:
+                        time.sleep(delay)
+                    else:
+                        st.error(f"Failed after {retries} attempts: {e}")
+                        raise e
+        return wrapper
+    return decorator
+
+# Function to authenticate Google Sheets using Streamlit's secrets
 def authenticate_google_sheets():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    json_path = "your-credentials.json"  # Update with the correct path to your credentials JSON file
+    # Get the credentials from Streamlit's secrets management (stored in .streamlit/secrets.toml)
+    credentials_info = {
+        "type": "service_account",
+        "project_id": st.secrets["GCP"]["GCP_PROJECT_ID"],
+        "private_key": st.secrets["GCP"]["GCP_PRIVATE_KEY"].replace('\\n', '\n'),
+        "client_email": st.secrets["GCP"]["GCP_CLIENT_EMAIL"],
+        "client_id": st.secrets["GCP"]["GCP_CLIENT_ID"],
+        "auth_uri": st.secrets["GCP"]["GCP_AUTH_URI"],
+        "token_uri": st.secrets["GCP"]["GCP_TOKEN_URI"],
+        "auth_provider_x509_cert_url": st.secrets["GCP"]["GCP_AUTH_PROVIDER_X509_CERT_URL"],
+        "client_x509_cert_url": st.secrets["GCP"]["GCP_CLIENT_X509_CERT_URL"],
+    }
 
-    if not os.path.exists(json_path):
-        st.error(f"Credentials file not found at {json_path}. Please check the path and filename.")
-        st.stop()
+    # Define the scope for Google Sheets API
+    scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
     try:
-        creds = ServiceAccountCredentials.from_json_keyfile_name(json_path, scope)
+        # Create credentials using the service account info from Streamlit's secrets
+        creds = Credentials.from_service_account_info(credentials_info, scopes=scope)
         client = gspread.authorize(creds)
     except Exception as e:
         st.error(f"Error loading or authorizing credentials: {e}")
