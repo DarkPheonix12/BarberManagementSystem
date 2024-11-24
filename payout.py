@@ -25,15 +25,25 @@ def retry_on_exception(retries=3, delay=2, exceptions=(ConnectionError, Transpor
 
 # Authentication function with enhanced retry handling for Google Sheets API
 def authenticate_google_sheets():
-    scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-    json_path = "your-credentials.json"
+    # Get the credentials from Streamlit's secrets management (stored in .streamlit/secrets.toml)
+    credentials_info = {
+        "type": "service_account",
+        "project_id": st.secrets["GCP"]["GCP_PROJECT_ID"],
+        "private_key": st.secrets["GCP"]["GCP_PRIVATE_KEY"].replace('\\n', '\n'),
+        "client_email": st.secrets["GCP"]["GCP_CLIENT_EMAIL"],
+        "client_id": st.secrets["GCP"]["GCP_CLIENT_ID"],
+        "auth_uri": st.secrets["GCP"]["GCP_AUTH_URI"],
+        "token_uri": st.secrets["GCP"]["GCP_TOKEN_URI"],
+        "auth_provider_x509_cert_url": st.secrets["GCP"]["GCP_AUTH_PROVIDER_X509_CERT_URL"],
+        "client_x509_cert_url": st.secrets["GCP"]["GCP_CLIENT_X509_CERT_URL"],
+    }
 
-    if not os.path.exists(json_path):
-        st.error(f"Credentials file not found at {json_path}. Please check the path and filename.")
-        st.stop()
+    # Define the scope for Google Sheets API
+    scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
     try:
-        creds = Credentials.from_service_account_file(json_path, scopes=scope)
+        # Create credentials using the service account info from Streamlit's secrets
+        creds = Credentials.from_service_account_info(credentials_info, scopes=scope)
         client = gspread.authorize(creds)
     except Exception as e:
         st.error(f"Error loading or authorizing credentials: {e}")
@@ -176,21 +186,3 @@ def app():
                 st.dataframe(df_paid)
             else:
                 st.write("No paid entries found.")
-
-            if unpaid_entries:
-                with st.form("update_form"):
-                    st.write("Update the status of unpaid entries:")
-                    new_status = st.selectbox("Update Unpaid Status to:", ["Paid", "Unpaid"])
-                    
-                    submit_button = st.form_submit_button("Update Status")
-                    if submit_button:
-                        st.info("Updating payout status... Please wait.")
-                        if update_payout_status(sheet, unpaid_entries, new_status):
-                            time.sleep(2)  # Wait for updates to propagate
-                            st.experimental_rerun()
-
-        else:
-            st.write(f"No entries found for {referred_phone}.")
-
-if __name__ == "__main__":
-    app()
