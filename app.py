@@ -23,7 +23,7 @@ gcp_credentials = {
     "token_uri": st.secrets["GCP"]["GCP_TOKEN_URI"],
     "auth_provider_x509_cert_url": st.secrets["GCP"]["GCP_AUTH_PROVIDER_X509_CERT_URL"],
     "client_x509_cert_url": st.secrets["GCP"]["GCP_CLIENT_X509_CERT_URL"],
-    "universe_domain": st.secrets["GCP"]["GCP_UNIVERSE_DOMAIN"]
+    "universe_domain": st.secrets["GCP"].get("GCP_UNIVERSE_DOMAIN", None)
 }
 
 # Authenticate with Google Sheets
