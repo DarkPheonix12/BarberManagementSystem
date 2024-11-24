@@ -38,22 +38,22 @@ def authenticate_google_sheets():
     return client
 
 # Fallback for JSON key-based authentication
-def authenticate_google_sheets_json():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    json_path = "your-credentials.json"  # Update with the actual path to your JSON file
+# def authenticate_google_sheets_json():
+#     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+#     json_path = "your-credentials.json"  # Update with the actual path to your JSON file
 
-    if not os.path.exists(json_path):
-        st.error(f"Credentials file not found at {json_path}. Please check the path and filename.")
-        st.stop()
+#     if not os.path.exists(json_path):
+#         st.error(f"Credentials file not found at {json_path}. Please check the path and filename.")
+#         st.stop()
 
-    try:
-        creds = ServiceAccountCredentials.from_json_keyfile_name(json_path, scope)
-        client = gspread.authorize(creds)
-    except Exception as e:
-        st.error(f"Error loading or authorizing credentials: {e}")
-        st.stop()
+#     try:
+#         creds = ServiceAccountCredentials.from_json_keyfile_name(json_path, scope)
+#         client = gspread.authorize(creds)
+#     except Exception as e:
+#         st.error(f"Error loading or authorizing credentials: {e}")
+#         st.stop()
 
-    return client
+#     return client
 
 # Connect to a specific Google Sheet
 def connect_to_sheet(spreadsheet_id, sheet_index=0):
