@@ -1,5 +1,6 @@
 import streamlit as st
 import gspread
+from google.oauth2 import service_account
 from oauth2client.service_account import ServiceAccountCredentials
 import os
 import pandas as pd
@@ -11,7 +12,33 @@ if os.environ.get('DISPLAY', '') != '':
 else:
     kit = None  # In headless mode, pywhatkit will not be available
 
+# Access your GCP credentials stored in Streamlit secrets
+gcp_credentials = {
+    "type": "service_account",
+    "project_id": st.secrets["GCP"]["GCP_PROJECT_ID"],
+    "private_key": st.secrets["GCP"]["GCP_PRIVATE_KEY"],
+    "client_email": st.secrets["GCP"]["GCP_CLIENT_EMAIL"],
+    "client_id": st.secrets["GCP"]["GCP_CLIENT_ID"],
+    "auth_uri": st.secrets["GCP"]["GCP_AUTH_URI"],
+    "token_uri": st.secrets["GCP"]["GCP_TOKEN_URI"],
+    "auth_provider_x509_cert_url": st.secrets["GCP"]["GCP_AUTH_PROVIDER_X509_CERT_URL"],
+    "client_x509_cert_url": st.secrets["GCP"]["GCP_CLIENT_X509_CERT_URL"],
+    "universe_domain": st.secrets["GCP"]["GCP_UNIVERSE_DOMAIN"]
+}
+
+# Authenticate with Google Sheets
 def authenticate_google_sheets():
+    try:
+        # GCP Authentication
+        credentials = service_account.Credentials.from_service_account_info(gcp_credentials)
+        client = gspread.authorize(credentials)
+    except Exception as e:
+        st.error(f"Error authenticating with Google Sheets: {e}")
+        st.stop()
+    return client
+
+# Fallback for JSON key-based authentication
+def authenticate_google_sheets_json():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     json_path = "your-credentials.json"  # Update with the actual path to your JSON file
 
@@ -28,9 +55,10 @@ def authenticate_google_sheets():
 
     return client
 
+# Connect to a specific Google Sheet
 def connect_to_sheet(spreadsheet_id, sheet_index=0):
     client = authenticate_google_sheets()
-    
+
     try:
         spreadsheet = client.open_by_key(spreadsheet_id)
         sheet = spreadsheet.get_worksheet(sheet_index)
@@ -43,6 +71,7 @@ def connect_to_sheet(spreadsheet_id, sheet_index=0):
 
     return sheet
 
+# Add an appointment to the Google Sheet
 def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, total_amount, referred_phone="N.A", discount_amount=0, payout_status="Unpaid"):
     try:
         services_str = ", ".join(services)
@@ -50,13 +79,13 @@ def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, 
     except Exception as e:
         st.error(f"Error adding appointment to sheet: {e}")
 
-# Function to send WhatsApp message via pywhatkit immediately
+# Send WhatsApp message via pywhatkit
 def send_whatsapp_message(contact, message):
     if kit:  # Only send WhatsApp message if pywhatkit is available
         try:
             # Format the phone number with the country code
             contact_with_code = f"+91{contact}"  # Assuming the number is in Indian format (adjust accordingly)
-            
+
             # Send the message instantly via WhatsApp
             kit.sendwhatmsg_instantly(contact_with_code, message)
             st.success(f"WhatsApp message sent to {contact}!")
@@ -70,6 +99,7 @@ def main():
     spreadsheet_id = "1xUWgXbyIUWeEtZ3WcPKrgUbF-yH_ZCPH8PbPvtvqJsU"  # **UPDATE THIS**
     sheet = connect_to_sheet(spreadsheet_id)
 
+    # Service data
     services_data = [
         {"service": "KERATIN (FEMALE)", "amount": 4200, "discount": "30%"},
         {"service": "KERATIN (MALE)", "amount": 2100, "discount": "30%"},
@@ -146,8 +176,8 @@ def main():
         {"service": "PEDICURES LUXURY", "amount": 1400, "discount": "30%"}
     ]
 
+    # Form to add a new appointment
     st.subheader("Add New Appointment")
-    
     with st.form(key="appointment_form"):
         name = st.text_input("Customer Name")
         services_selected = st.multiselect("Select Services", [service["service"] for service in services_data])
@@ -161,41 +191,42 @@ def main():
         discount_percentage = st.number_input("Percentage of Services Availment", min_value=0, max_value=100, value=20)
 
         submit_button = st.form_submit_button(label="Add Appointment")
-    
-    if submit_button:
-        if not name or not services_selected or not time or not contact:
-            st.error("Please fill in all fields.")
-            return
 
-        if not contact.isdigit() or len(contact) != 10:
-            st.error("Please enter a valid 10-digit phone number.")
-            return
+        if submit_button:
+            if not name or not services_selected or not time or not contact:
+                st.error("Please fill in all fields.")
+                return
 
-        total_amount = sum(service["amount"] for service in services_data if service["service"] in services_selected)
-        discount_amount = 0
-        if offer == "Yes" and referred_phone != "N.A":
-            discount_amount = (discount_percentage / 100) * total_amount
-            st.write(f"Discount Amount: {discount_amount} ")
+            if not contact.isdigit() or len(contact) != 10:
+                st.error("Please enter a valid 10-digit phone number.")
+                return
 
-        contact_with_code = f"+91{contact}"
-        time_str = time.strftime("%H:%M")
-        date_str = date.strftime("%Y-%m-%d")
+            total_amount = sum(service["amount"] for service in services_data if service["service"] in services_selected)
+            discount_amount = 0
+            if offer == "Yes" and referred_phone != "N.A":
+                discount_amount = (discount_percentage / 100) * total_amount
+                st.write(f"Discount Amount: {discount_amount} ")
 
-        add_appointment_to_sheet(sheet, name, services_selected, date_str, time_str, contact_with_code, offer, total_amount, referred_phone, discount_amount, payout_status)
-    
-        # Send WhatsApp message immediately asking for Google review
-        message = (
-            f"Hello {name},\n\n"
-            "Thank you for visiting us at our Nature's Beauty Salon! We hope you had an amazing experience with our services.\n"
-            "We'd love for you to leave us a great review on Google! "
-            "Your feedback helps us improve and lets others know about the excellent service we provide.\n\n"
-            "Looking forward to seeing you again!\n\n"
-            "Best regards,\nThe Salon Team"
-        )
-        send_whatsapp_message(contact, message)
-    
-        st.success(f"Appointment added successfully for {name}. Payout Status: {payout_status}")
+            contact_with_code = f"+91{contact}"
+            time_str = time.strftime("%H:%M")
+            date_str = date.strftime("%Y-%m-%d")
 
+            add_appointment_to_sheet(sheet, name, services_selected, date_str, time_str, contact_with_code, offer, total_amount, referred_phone, discount_amount, payout_status)
+
+            # Send WhatsApp message immediately asking for Google review
+            message = (
+                f"Hello {name},\n\n"
+                "Thank you for visiting us at our Nature's Beauty Salon! We hope you had an amazing experience with our services.\n"
+                "We'd love for you to leave us a great review on Google! "
+                "Your feedback helps us improve and lets others know about the excellent service we provide.\n\n"
+                "Looking forward to seeing you again!\n\n"
+                "Best regards,\nThe Salon Team"
+            )
+            send_whatsapp_message(contact, message)
+
+            st.success(f"Appointment added successfully for {name}. Payout Status: {payout_status}")
+
+    # Display all appointments
     st.subheader("All Appointments")
     try:
         appointments = sheet.get_all_records()
@@ -206,7 +237,6 @@ def main():
             if 'Payout Status' in df.columns:
                 df['Payout Status'] = df['Payout Status'].replace({'True': 'Paid', 'False': 'Unpaid'})
             st.table(df)
-
     except Exception as e:
         st.error(f"Error fetching appointments: {e}")
 
