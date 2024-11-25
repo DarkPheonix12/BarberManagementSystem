@@ -1,18 +1,15 @@
 import streamlit as st
 import gspread
 from google.oauth2 import service_account
+from oauth2client.service_account import ServiceAccountCredentials
 import os
 import pandas as pd
-import traceback
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-import pywhatkit as kit
-from oauth2client.service_account import ServiceAccountCredentials
 import time
+import traceback
 
 # Conditionally import pywhatkit if not running in a headless environment
 if os.environ.get('DISPLAY', '') != '':
-    kit = pywhatkit  # Import pywhatkit if it's not headless
+    import pywhatkit as kit
 else:
     kit = None  # In headless mode, pywhatkit will not be available
 
@@ -69,26 +66,17 @@ def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, 
     except Exception as e:
         st.error(f"Error adding appointment to sheet: {e}")
 
+# Send WhatsApp message via pywhatkit
 def send_whatsapp_message(contact, message):
-    # Check if DISPLAY environment variable is set (headless environment check)
-    if os.environ.get('DISPLAY', '') != '':
+    if kit:  # Only send WhatsApp message if pywhatkit is available
         try:
-            # Configure headless Chrome options
-            options = Options()
-            options.add_argument("--headless")
-            options.add_argument("--no-sandbox")
-            options.add_argument("--disable-dev-shm-usage")
-
-            # Initialize the WebDriver with headless mode
-            driver = webdriver.Chrome(options=options)
-
-            contact_with_code = f"+91{contact}"
-            kit.sendwhatmsg_instantly(contact_with_code, message, driver=driver)
-            print(f"WhatsApp message sent to {contact}!")
+            contact_with_code = f"+91{contact}"  # Adjust the country code as needed
+            kit.sendwhatmsg_instantly(contact_with_code, message)
+            st.success(f"WhatsApp message sent to {contact}!")
         except Exception as e:
-            print(f"Error sending WhatsApp message: {e}")
+            st.error(f"Error sending WhatsApp message: {e}")
     else:
-        print("WhatsApp message sending is not supported in the current environment (headless).")
+        st.warning("WhatsApp message sending is not supported in the current environment.")
 
 def main():
     st.title("Barber Management System")
@@ -131,32 +119,98 @@ def main():
         {"service": "BEARD", "amount": 70, "discount": "30%"},
         {"service": "CLEAN SHAVE", "amount": 105, "discount": "30%"},
         {"service": "HAIR TRIMMING (FEMALE)", "amount": 210, "discount": "30%"},
-        {"service": "HAIR CUT ADVANCE (FEMALE)", "amount": 420, "discount": "30%"},
+        {"service": "HAIR CUT ADVANCE (FEMALE)", "amount": 350, "discount": "30%"},
+        {"service": "CREATIVE HAIR CUT (FEMALE)", "amount": 420, "discount": "30%"},
+        {"service": "BABY HAIR CUT BASIC", "amount": 105, "discount": "30%"},
+        {"service": "BABY HAIR CUT ADVANCE", "amount": 150, "discount": "25%"},
+        {"service": "LOTUS BASIC FACIAL", "amount": 700, "discount": "30%"},
+        {"service": "RAAGA FACIAL", "amount": 700, "discount": "30%"},
+        {"service": "NATURES FACIAL", "amount": 700, "discount": "30%"},
+        {"service": "GLODSHEEN FACIAL", "amount": 1540, "discount": "30%"},
+        {"service": "RAGA PLATINUM FACIAL", "amount": 1400, "discount": "30%"},
+        {"service": "RAGA GOLD FACIAL", "amount": 1400, "discount": "30%"},
+        {"service": "FRESH FRUIT FACIAL", "amount": 1400, "discount": "30%"},
+        {"service": "O3+ WHITENING", "amount": 1750, "discount": "30%"},
+        {"service": "O3+ SEAWEED", "amount": 1750, "discount": "30%"},
+        {"service": "LOTUS 4 LAYERS", "amount": 1750, "discount": "30%"},
+        {"service": "CHENYI'S TAN CLEAR", "amount": 1750, "discount": "30%"},
+        {"service": "CHENYI'S SENSIGLOW", "amount": 1750, "discount": "30%"},
+        {"service": "O3+ DIAMOND", "amount": 1750, "discount": "30%"},
+        {"service": "ANTI AGEING (LOTUS)", "amount": 1750, "discount": "30%"},
+        {"service": "Cream Bleach FACE", "amount": 420, "discount": "30%"},
+        {"service": "Cream Bleach NECK", "amount": 280, "discount": "30%"},
+        {"service": "Cream Bleach UNDER ARMS", "amount": 140, "discount": "30%"},
+        {"service": "Cream Bleach FULL BACK", "amount": 560, "discount": "30%"},
+        {"service": "Cream Bleach HALF ARM", "amount": 210, "discount": "30%"},
+        {"service": "Cream Bleach FULL ARM", "amount": 420, "discount": "30%"},
+        {"service": "Cream Bleach FEET", "amount": 280, "discount": "30%"},
+        {"service": "Cream Bleach HALF LEG", "amount": 420, "discount": "30%"},
+        {"service": "Cream Bleach FULL LEG", "amount": 700, "discount": "30%"},
+        {"service": "Cream Bleach FULL BODY", "amount": 2800, "discount": "30%"},
+        {"service": "LUXURY FULL BODY MASSAGE", "amount": 2100, "discount": "30%"},
+        {"service": "CLEAN-UP O3", "amount": 700, "discount": "0%"},
+        {"service": "CLEAN-UP LOTUS", "amount": 350, "discount": "0%"},
+        {"service": "CLEAN-UP NATURES", "amount": 350, "discount": "0%"},
+        {"service": "MENICURES BASIC", "amount": 630, "discount": "30%"},
+        {"service": "MENICURES CLASSIC", "amount": 700, "discount": "30%"},
+        {"service": "MENICURES LUXURY", "amount": 1050, "discount": "30%"},
+        {"service": "PEDICURES BASIC", "amount": 700, "discount": "30%"},
+        {"service": "PEDICURES CLASSIC", "amount": 910, "discount": "30%"},
+        {"service": "PEDICURES LUXURY", "amount": 1400, "discount": "30%"}
     ]
 
-    # Display form to create appointments
-    st.header("Create New Appointment")
+    st.subheader("Add New Appointment")
     with st.form(key="appointment_form"):
         name = st.text_input("Customer Name")
-        services = st.multiselect("Select Services", [s['service'] for s in services_data])
+        services_selected = st.multiselect("Select Services", [service["service"] for service in services_data])
         date = st.date_input("Appointment Date")
         time = st.time_input("Appointment Time")
-        contact = st.text_input("Customer Contact Number")
-        offer = st.selectbox("Offer", ["None", "30% off", "50% off", "60% off"])
-        total_amount = sum([s['amount'] for s in services_data if s['service'] in services])
-        referred_phone = st.text_input("Referred by Phone (Optional)")
-        discount_amount = st.number_input("Discount Amount", min_value=0, value=0)
-        submit_button = st.form_submit_button("Submit Appointment")
+        contact = st.text_input("Customer Contact (10-digit number for India only)")
+        offer = st.selectbox("Avail Offer?", ["No", "Yes"])
+        payout_status = st.selectbox("Payout Status", ["Unpaid", "Paid"])
+        referred_phone = st.text_input("Referred Phone Number", value="N.A")
+        discount_percentage = st.number_input("Percentage of Services Availment", min_value=0, max_value=100, value=20)
+        submit_button = st.form_submit_button(label="Add Appointment")
 
         if submit_button:
-            # Add appointment to Google Sheets
-            add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, total_amount, referred_phone, discount_amount)
-
-            # Send WhatsApp message
-            message = f"Your appointment is confirmed for {date} at {time}. Services: {', '.join(services)}. Total: {total_amount}."
+            if not name or not services_selected or not time or not contact:
+                st.error("Please fill in all fields.")
+                return
+            if not contact.isdigit() or len(contact) != 10:
+                st.error("Please enter a valid 10-digit phone number.")
+                return
+            total_amount = sum(service["amount"] for service in services_data if service["service"] in services_selected)
+            discount_amount = 0
+            if offer == "Yes" and referred_phone != "N.A":
+                discount_amount = (discount_percentage / 100) * total_amount
+                st.write(f"Discount Amount: {discount_amount} ")
+            contact_with_code = f"+91{contact}"
+            time_str = time.strftime("%H:%M")
+            date_str = date.strftime("%Y-%m-%d")
+            add_appointment_to_sheet(sheet, name, services_selected, date_str, time_str, contact_with_code, offer, total_amount, referred_phone, discount_amount, payout_status)
+            message = (
+                f"Hello {name},\n\n"
+                "Thank you for visiting us at our Nature's Beauty Salon! We hope you had an amazing experience with our services.\n"
+                "We'd love for you to leave us a great review on Google! "
+                "Your feedback helps us improve and lets others know about the excellent service we provide.\n\n"
+                "Looking forward to seeing you again!\n\n"
+                "Best regards,\nThe Salon Team"
+            )
             send_whatsapp_message(contact, message)
+            st.success(f"Appointment added successfully for {name}. Payout Status: {payout_status}")
 
-            st.success("Appointment added and WhatsApp message sent successfully.")
+    st.subheader("All Appointments")
+    try:
+        appointments = sheet.get_all_records()
+        if not appointments:
+            st.write("No appointments found.")
+        else:
+            df = pd.DataFrame(appointments)
+            if 'Payout Status' in df.columns:
+                df['Payout Status'] = df['Payout Status'].replace({'True': 'Paid', 'False': 'Unpaid'})
+            st.table(df)
+    except Exception as e:
+        st.error(f"Error fetching appointments: {e}")
 
 if __name__ == "__main__":
     main()
