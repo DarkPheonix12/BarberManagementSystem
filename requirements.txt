@@ -8,4 +8,3 @@ pywhatkit
 streamlit-option-menu
 pyyaml
 bcrypt
-selenium
