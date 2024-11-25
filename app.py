@@ -70,8 +70,14 @@ def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, 
         st.error(f"Error adding appointment to sheet: {e}")
 
 # Send WhatsApp message via pywhatkit (with headless support)
+import os
+import pywhatkit as kit
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
 def send_whatsapp_message(contact, message):
-    if kit:  # Only send WhatsApp message if pywhatkit is available
+    # Check if DISPLAY environment variable is set (headless environment check)
+    if os.environ.get('DISPLAY', '') != '':
         try:
             # Configure headless Chrome options
             options = Options()
@@ -84,11 +90,12 @@ def send_whatsapp_message(contact, message):
 
             contact_with_code = f"+91{contact}"
             kit.sendwhatmsg_instantly(contact_with_code, message, driver=driver)
-            st.success(f"WhatsApp message sent to {contact}!")
+            print(f"WhatsApp message sent to {contact}!")
         except Exception as e:
-            st.error(f"Error sending WhatsApp message: {e}")
+            print(f"Error sending WhatsApp message: {e}")
     else:
-        st.warning("WhatsApp message sending is not supported in the current environment.")
+        print("WhatsApp message sending is not supported in the current environment (headless).")
+
 
 def main():
     st.title("Barber Management System")
