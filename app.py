@@ -69,12 +69,6 @@ def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, 
     except Exception as e:
         st.error(f"Error adding appointment to sheet: {e}")
 
-# Send WhatsApp message via pywhatkit (with headless support)
-import os
-import pywhatkit as kit
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-
 def send_whatsapp_message(contact, message):
     # Check if DISPLAY environment variable is set (headless environment check)
     if os.environ.get('DISPLAY', '') != '':
