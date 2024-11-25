@@ -1,15 +1,18 @@
 import streamlit as st
 import gspread
 from google.oauth2 import service_account
-from oauth2client.service_account import ServiceAccountCredentials
 import os
 import pandas as pd
-import time
 import traceback
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+import pywhatkit as kit
+from oauth2client.service_account import ServiceAccountCredentials
+import time
 
 # Conditionally import pywhatkit if not running in a headless environment
 if os.environ.get('DISPLAY', '') != '':
-    import pywhatkit as kit
+    kit = pywhatkit  # Import pywhatkit if it's not headless
 else:
     kit = None  # In headless mode, pywhatkit will not be available
 
@@ -66,12 +69,21 @@ def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, 
     except Exception as e:
         st.error(f"Error adding appointment to sheet: {e}")
 
-# Send WhatsApp message via pywhatkit
+# Send WhatsApp message via pywhatkit (with headless support)
 def send_whatsapp_message(contact, message):
     if kit:  # Only send WhatsApp message if pywhatkit is available
         try:
-            contact_with_code = f"+91{contact}"  # Adjust the country code as needed
-            kit.sendwhatmsg_instantly(contact_with_code, message)
+            # Configure headless Chrome options
+            options = Options()
+            options.add_argument("--headless")
+            options.add_argument("--no-sandbox")
+            options.add_argument("--disable-dev-shm-usage")
+
+            # Initialize the WebDriver with headless mode
+            driver = webdriver.Chrome(options=options)
+
+            contact_with_code = f"+91{contact}"
+            kit.sendwhatmsg_instantly(contact_with_code, message, driver=driver)
             st.success(f"WhatsApp message sent to {contact}!")
         except Exception as e:
             st.error(f"Error sending WhatsApp message: {e}")
