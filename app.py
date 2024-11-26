@@ -79,7 +79,7 @@ def send_whatsapp_message(contact, message):
         st.warning("WhatsApp message sending is not supported in the current environment.")
 
 def main():
-    st.title("Barber Management System")
+    st.title("Customer Management System")
     spreadsheet_id = "1xUWgXbyIUWeEtZ3WcPKrgUbF-yH_ZCPH8PbPvtvqJsU"  # **UPDATE THIS**
     sheet = connect_to_sheet(spreadsheet_id)
 
