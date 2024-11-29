@@ -3,3 +3,4 @@ libnss3
 libgconf-2-4
 libfontconfig1
 libxss1
+chromium-browser
