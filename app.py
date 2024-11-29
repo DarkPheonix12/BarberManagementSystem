@@ -6,6 +6,12 @@ import os
 import pandas as pd
 import time
 import traceback
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 
 # Conditionally import pywhatkit if not running in a headless environment
 if os.environ.get('DISPLAY', '') != '':
@@ -66,17 +72,34 @@ def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, 
     except Exception as e:
         st.error(f"Error adding appointment to sheet: {e}")
 
-# Send WhatsApp message via pywhatkit
+# Send WhatsApp message
 def send_whatsapp_message(contact, message):
-    if kit:  # Only send WhatsApp message if pywhatkit is available
-        try:
-            contact_with_code = f"+91{contact}"  # Adjust the country code as needed
+    try:
+        contact_with_code = f"+91{contact}"  # Adjust the country code as needed
+        if kit:  # Use pywhatkit if available
             kit.sendwhatmsg_instantly(contact_with_code, message)
-            st.success(f"WhatsApp message sent to {contact}!")
-        except Exception as e:
-            st.error(f"Error sending WhatsApp message: {e}")
-    else:
-        st.warning("WhatsApp message sending is not supported in the current environment.")
+            st.success(f"WhatsApp message sent to {contact_with_code} using pywhatkit!")
+        else:  # Fallback to Selenium for headless environments
+            options = Options()
+            options.add_argument("--start-maximized")
+            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+            driver.get("https://web.whatsapp.com")
+            st.info("Please scan the QR code to log in to WhatsApp.")
+            time.sleep(15)  # Wait for user to scan QR code
+            search_box = driver.find_element(By.XPATH, '//div[@contenteditable="true"][@data-tab="3"]')
+            search_box.click()
+            search_box.send_keys(contact_with_code)
+            search_box.send_keys(Keys.RETURN)
+            time.sleep(2)
+            message_box = driver.find_element(By.XPATH, '//div[@contenteditable="true"][@data-tab="1"]')
+            message_box.click()
+            message_box.send_keys(message)
+            message_box.send_keys(Keys.RETURN)
+            st.success(f"WhatsApp message sent to {contact_with_code} using Selenium!")
+            driver.quit()
+    except Exception as e:
+        st.error(f"Error sending WhatsApp message: {e}")
+        traceback.print_exc()
 
 def main():
     st.title("Customer Management System")
@@ -88,7 +111,6 @@ def main():
         {"service": "KERATIN (MALE)", "amount": 2100, "discount": "30%"},
         {"service": "SMOOTHENING (FEMALE)", "amount": 4200, "discount": "30%"},
         {"service": "SMOOTHENING (MALE)", "amount": 1400, "discount": "30%"},
-        {"service": "SCALP TREATMENT", "amount": None, "discount": None},
         {"service": "HOT OIL MASSAGE (MALE)", "amount": 140, "discount": "60%"},
         {"service": "ORGAN ALOE VERA OIL (MALE)", "amount": 140, "discount": "50%"},
         {"service": "HOT OIL MASSAGE (FEMALE)", "amount": 350, "discount": "50%"},
