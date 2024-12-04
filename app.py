@@ -225,6 +225,9 @@ def main():
             send_whatsapp_message(contact, message)
             st.success(f"Appointment added successfully for {name}. Payout Status: {payout_status}")
 
+            # Add customer photo link to the log
+            st.write(f"Photo link for {name}: {photo_link}")
+
     st.subheader("All Appointments")
     try:
         appointments = sheet.get_all_records()
