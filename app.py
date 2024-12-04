@@ -6,7 +6,6 @@ import os
 import pandas as pd
 import time
 import traceback
-import requests
 
 # Conditionally import pywhatkit if not running in a headless environment
 if os.environ.get('DISPLAY', '') != '':
@@ -67,42 +66,17 @@ def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, 
     except Exception as e:
         st.error(f"Error adding appointment to sheet: {e}")
 
-# Send WhatsApp message via WhatsApp Business API
-def send_whatsapp_message_via_api(phone_number, message):
-    try:
-        # WhatsApp API credentials
-        ACCESS_TOKEN = st.secrets["WHATSAPP"]["ACCESS_TOKEN"]  # Get the access token from Streamlit secrets
-        WHATSAPP_PHONE_ID = st.secrets["WHATSAPP"]["PHONE_ID"]  # Your WhatsApp Business Phone ID
-        
-        # WhatsApp API endpoint
-        url = f"https://graph.facebook.com/v17.0/{WHATSAPP_PHONE_ID}/messages"
-        
-        # API request payload
-        payload = {
-            "messaging_product": "whatsapp",
-            "to": f"+91{phone_number}",  # Adjust country code if needed
-            "type": "text",
-            "text": {
-                "body": message
-            }
-        }
-        
-        # API headers
-        headers = {
-            "Authorization": f"Bearer {ACCESS_TOKEN}",
-            "Content-Type": "application/json"
-        }
-        
-        # Make the API call
-        response = requests.post(url, json=payload, headers=headers)
-        
-        # Check the response
-        if response.status_code == 200:
-            st.success(f"WhatsApp message sent to {phone_number}!")
-        else:
-            st.error(f"Error sending WhatsApp message: {response.json()}")
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
+# Send WhatsApp message via pywhatkit
+def send_whatsapp_message(contact, message):
+    if kit:  # Only send WhatsApp message if pywhatkit is available
+        try:
+            contact_with_code = f"+91{contact}"  # Adjust the country code as needed
+            kit.sendwhatmsg_instantly(contact_with_code, message)
+            st.success(f"WhatsApp message sent to {contact}!")
+        except Exception as e:
+            st.error(f"Error sending WhatsApp message: {e}")
+    else:
+        st.warning("WhatsApp message sending is not supported in the current environment.")
 
 def main():
     st.title("Barber Management System")
@@ -114,6 +88,7 @@ def main():
         {"service": "KERATIN (MALE)", "amount": 2100, "discount": "30%"},
         {"service": "SMOOTHENING (FEMALE)", "amount": 4200, "discount": "30%"},
         {"service": "SMOOTHENING (MALE)", "amount": 1400, "discount": "30%"},
+        {"service": "SCALP TREATMENT", "amount": None, "discount": None},
         {"service": "HOT OIL MASSAGE (MALE)", "amount": 140, "discount": "60%"},
         {"service": "ORGAN ALOE VERA OIL (MALE)", "amount": 140, "discount": "50%"},
         {"service": "HOT OIL MASSAGE (FEMALE)", "amount": 350, "discount": "50%"},
@@ -195,7 +170,6 @@ def main():
         payout_status = st.selectbox("Payout Status", ["Unpaid", "Paid"])
         referred_phone = st.text_input("Referred Phone Number", value="N.A")
         discount_percentage = st.number_input("Percentage of Services Availment", min_value=0, max_value=100, value=20)
-        photo_link = st.text_input("Customer Photo Link (Google Drive)")
         submit_button = st.form_submit_button(label="Add Appointment")
 
         if submit_button:
@@ -224,9 +198,6 @@ def main():
             )
             send_whatsapp_message(contact, message)
             st.success(f"Appointment added successfully for {name}. Payout Status: {payout_status}")
-
-            # Add customer photo link to the log
-            st.write(f"Photo link for {name}: {photo_link}")
 
     st.subheader("All Appointments")
     try:
