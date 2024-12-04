@@ -6,7 +6,6 @@ import os
 import pandas as pd
 import time
 import traceback
-import requests
 from twilio.rest import Client
 
 # Conditionally import pywhatkit if not running in a headless environment
