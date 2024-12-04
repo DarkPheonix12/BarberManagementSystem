@@ -6,7 +6,7 @@ import os
 import pandas as pd
 import time
 import traceback
-from twilio.rest import Client
+import requests
 
 # Conditionally import pywhatkit if not running in a headless environment
 if os.environ.get('DISPLAY', '') != '':
@@ -67,27 +67,42 @@ def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, 
     except Exception as e:
         st.error(f"Error adding appointment to sheet: {e}")
 
-# Send WhatsApp message via Twilio
-def send_whatsapp_message_via_twilio(to_number, message):
+# Send WhatsApp message via WhatsApp Business API
+def send_whatsapp_message_via_api(phone_number, message):
     try:
-        # Twilio credentials from Streamlit secrets
-        TWILIO_ACCOUNT_SID = st.secrets["TWILIO"]["ACCOUNT_SID"]
-        TWILIO_AUTH_TOKEN = st.secrets["TWILIO"]["AUTH_TOKEN"]
-        TWILIO_WHATSAPP_NUMBER = st.secrets["TWILIO"]["WHATSAPP_NUMBER"]  # Format: 'whatsapp:+14155238886'
-
-        # Initialize the Twilio client
-        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-
-        # Send WhatsApp message
-        message = client.messages.create(
-            body=message,
-            from_=TWILIO_WHATSAPP_NUMBER,  # Twilio's WhatsApp-enabled number
-            to=f'whatsapp:+91{to_number}'  # Adjust the country code as needed
-        )
-
-        st.success(f"WhatsApp message sent to {to_number}! Message SID: {message.sid}")
+        # WhatsApp API credentials
+        ACCESS_TOKEN = st.secrets["WHATSAPP"]["ACCESS_TOKEN"]  # Get the access token from Streamlit secrets
+        WHATSAPP_PHONE_ID = st.secrets["WHATSAPP"]["PHONE_ID"]  # Your WhatsApp Business Phone ID
+        
+        # WhatsApp API endpoint
+        url = f"https://graph.facebook.com/v17.0/{WHATSAPP_PHONE_ID}/messages"
+        
+        # API request payload
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": f"+91{phone_number}",  # Adjust country code if needed
+            "type": "text",
+            "text": {
+                "body": message
+            }
+        }
+        
+        # API headers
+        headers = {
+            "Authorization": f"Bearer {ACCESS_TOKEN}",
+            "Content-Type": "application/json"
+        }
+        
+        # Make the API call
+        response = requests.post(url, json=payload, headers=headers)
+        
+        # Check the response
+        if response.status_code == 200:
+            st.success(f"WhatsApp message sent to {phone_number}!")
+        else:
+            st.error(f"Error sending WhatsApp message: {response.json()}")
     except Exception as e:
-        st.error(f"An error occurred while sending WhatsApp message via Twilio: {e}")
+        st.error(f"An error occurred: {e}")
 
 def main():
     st.title("Barber Management System")
