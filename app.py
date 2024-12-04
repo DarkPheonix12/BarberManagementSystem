@@ -194,8 +194,8 @@ def main():
         offer = st.selectbox("Avail Offer?", ["No", "Yes"])
         payout_status = st.selectbox("Payout Status", ["Unpaid", "Paid"])
         referred_phone = st.text_input("Referred Phone Number", value="N.A")
-        photo_link = st.text_input("Customer Photo Link (Google Drive)")
         discount_percentage = st.number_input("Percentage of Services Availment", min_value=0, max_value=100, value=20)
+        photo_link = st.text_input("Customer Photo Link (Google Drive)")
         submit_button = st.form_submit_button(label="Add Appointment")
 
         if submit_button:
