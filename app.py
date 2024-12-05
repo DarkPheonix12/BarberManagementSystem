@@ -62,7 +62,9 @@ def connect_to_sheet(spreadsheet_id, sheet_index=0):
 def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, total_amount, referred_phone="N.A", discount_amount=0, payout_status="Unpaid"):
     try:
         services_str = ", ".join(services)
-        sheet.append_row([name, services_str, date, time, contact, offer, total_amount, referred_phone, discount_amount, payout_status])
+        # Format WhatsApp number in the last column
+        whatsapp_contact = f"WhatsApp: +91{contact}"
+        sheet.append_row([name, services_str, date, time, contact, offer, total_amount, referred_phone, discount_amount, payout_status, whatsapp_contact])
     except Exception as e:
         st.error(f"Error adding appointment to sheet: {e}")
 
