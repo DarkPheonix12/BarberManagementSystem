@@ -59,14 +59,10 @@ def connect_to_sheet(spreadsheet_id, sheet_index=0):
     return sheet
 
 # Add an appointment to the Google Sheet
-def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, total_amount, referred_phone="N.A", discount_amount=0, payout_status="Unpaid", photo_link=None):
+def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, total_amount, referred_phone="N.A", discount_amount=0, payout_status="Unpaid"):
     try:
         services_str = ", ".join(services)
-        contact_with_code = f"whatsapp: +91{contact}"
-        row_data = [name, services_str, date, time, contact_with_code, offer, total_amount, referred_phone, discount_amount, payout_status]
-        if photo_link:
-            row_data.append(photo_link)
-        sheet.append_row(row_data)
+        sheet.append_row([name, services_str, date, time, contact, offer, total_amount, referred_phone, discount_amount, payout_status])
     except Exception as e:
         st.error(f"Error adding appointment to sheet: {e}")
 
@@ -174,7 +170,6 @@ def main():
         payout_status = st.selectbox("Payout Status", ["Unpaid", "Paid"])
         referred_phone = st.text_input("Referred Phone Number", value="N.A")
         discount_percentage = st.number_input("Percentage of Services Availment", min_value=0, max_value=100, value=20)
-        drive_photo_link = st.text_input("Google Drive Link for Customer Photo (optional)")
         submit_button = st.form_submit_button(label="Add Appointment")
 
         if submit_button:
@@ -188,10 +183,11 @@ def main():
             discount_amount = 0
             if offer == "Yes" and referred_phone != "N.A":
                 discount_amount = (discount_percentage / 100) * total_amount
-            date_str = date.strftime("%Y-%m-%d")
+                st.write(f"Discount Amount: {discount_amount} ")
+            contact_with_code = f"+91{contact}"
             time_str = time.strftime("%H:%M")
-            add_appointment_to_sheet(sheet, name, services_selected, date_str, time_str, contact, offer, total_amount, referred_phone, discount_amount, payout_status, drive_photo_link)
-            
+            date_str = date.strftime("%Y-%m-%d")
+            add_appointment_to_sheet(sheet, name, services_selected, date_str, time_str, contact_with_code, offer, total_amount, referred_phone, discount_amount, payout_status)
             message = (
                 f"Hello {name},\n\n"
                 "Thank you for visiting us at our Nature's Beauty Salon! We hope you had an amazing experience with our services.\n"
@@ -210,6 +206,8 @@ def main():
             st.write("No appointments found.")
         else:
             df = pd.DataFrame(appointments)
+            if 'Payout Status' in df.columns:
+                df['Payout Status'] = df['Payout Status'].replace({'True': 'Paid', 'False': 'Unpaid'})
             st.table(df)
     except Exception as e:
         st.error(f"Error fetching appointments: {e}")
