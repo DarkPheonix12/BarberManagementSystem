@@ -151,6 +151,8 @@ def main():
         payout_status = st.selectbox("Payout Status", ["Unpaid", "Paid"])
         referred_phone = st.text_input("Referred Phone Number", value="N.A")
         discount_percentage = st.number_input("Discount Percentage", min_value=0, max_value=100, value=20)
+        kiit_roll = st.text_input("KIIT Roll Number", value="N.A")
+        employee = st.text_input("Employee Worked", value="N.A")
         submit_button = st.form_submit_button(label="Add Appointment")
 
         if submit_button:
@@ -175,7 +177,7 @@ def main():
             # Add appointment to the sheet
             add_appointment_to_sheet(
                 sheet, name, services_selected, date_str, time_str, contact_with_code,
-                offer, total_amount, referred_phone, discount_amount, payout_status
+                offer, total_amount, referred_phone, discount_amount, payout_status, kiit_roll, employee
             )
             st.success(f"Appointment added successfully for {name}. Payout Status: {payout_status}")
 
