@@ -49,7 +49,7 @@ def connect_to_sheet(spreadsheet_id, sheet_index=0):
     return sheet
 
 # Add an appointment to the Google Sheet
-def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, total_amount, referred_phone="N.A", discount_amount=0, payout_status="Unpaid"):
+def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, total_amount, referred_phone="N.A", discount_amount=0, payout_status="Unpaid", kiit_roll="N.A", employee="N.A"):
     try:
         services_str = ", ".join(services)
         # Format WhatsApp number in the last column
