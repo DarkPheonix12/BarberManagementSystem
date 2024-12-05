@@ -170,6 +170,7 @@ def main():
         payout_status = st.selectbox("Payout Status", ["Unpaid", "Paid"])
         referred_phone = st.text_input("Referred Phone Number", value="N.A")
         discount_percentage = st.number_input("Percentage of Services Availment", min_value=0, max_value=100, value=20)
+        drive_photo_link = st.text_input("Google Drive Link for Customer Photo (optional)")
         submit_button = st.form_submit_button(label="Add Appointment")
 
         if submit_button:
@@ -188,6 +189,12 @@ def main():
             time_str = time.strftime("%H:%M")
             date_str = date.strftime("%Y-%m-%d")
             add_appointment_to_sheet(sheet, name, services_selected, date_str, time_str, contact_with_code, offer, total_amount, referred_phone, discount_amount, payout_status)
+             if drive_photo_link:
+                try:
+                    sheet.append_row(["Customer Photo Link", drive_photo_link])
+                except Exception as e:
+                    st.error(f"Error adding photo link to sheet: {e}")
+            
             message = (
                 f"Hello {name},\n\n"
                 "Thank you for visiting us at our Nature's Beauty Salon! We hope you had an amazing experience with our services.\n"
