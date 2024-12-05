@@ -1,10 +1,8 @@
 import streamlit as st
 import gspread
 from google.oauth2 import service_account
-from oauth2client.service_account import ServiceAccountCredentials
 import os
 import pandas as pd
-import time
 import traceback
 
 # Conditionally import pywhatkit if not running in a headless environment
@@ -24,7 +22,7 @@ gcp_credentials = {
     "token_uri": st.secrets["GCP"]["GCP_TOKEN_URI"],
     "auth_provider_x509_cert_url": st.secrets["GCP"]["GCP_AUTH_PROVIDER_X509_CERT_URL"],
     "client_x509_cert_url": st.secrets["GCP"]["GCP_CLIENT_X509_CERT_URL"],
-    "universe_domain": st.secrets["GCP"].get("GCP_UNIVERSE_DOMAIN", None)
+    "universe_domain": st.secrets["GCP"].get("GCP_UNIVERSE_DOMAIN", None),
 }
 
 # Authenticate with Google Sheets
@@ -62,8 +60,7 @@ def connect_to_sheet(spreadsheet_id, sheet_index=0):
 def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, total_amount, referred_phone="N.A", discount_amount=0, payout_status="Unpaid"):
     try:
         services_str = ", ".join(services)
-        # Format WhatsApp number in the last column
-        whatsapp_contact = f"WhatsApp: +91{contact}"
+        whatsapp_contact = f"WhatsApp: +91{contact}"  # Format WhatsApp number
         sheet.append_row([name, services_str, date, time, contact, offer, total_amount, referred_phone, discount_amount, payout_status, whatsapp_contact])
     except Exception as e:
         st.error(f"Error adding appointment to sheet: {e}")
@@ -192,7 +189,7 @@ def main():
             add_appointment_to_sheet(sheet, name, services_selected, date_str, time_str, contact_with_code, offer, total_amount, referred_phone, discount_amount, payout_status)
             message = (
                 f"Hello {name},\n\n"
-                "Thank you for visiting us at our Nature's Beauty Salon! We hope you had an amazing experience with our services.\n"
+                "Thank you for visiting us at Nature's Beauty Salon! We hope you had an amazing experience with our services.\n"
                 "We'd love for you to leave us a great review on Google! "
                 "Your feedback helps us improve and lets others know about the excellent service we provide.\n\n"
                 "Looking forward to seeing you again!\n\n"
