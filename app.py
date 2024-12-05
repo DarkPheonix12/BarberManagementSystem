@@ -1,28 +1,20 @@
 import streamlit as st
 import gspread
 from google.oauth2 import service_account
-import os
 import pandas as pd
 import traceback
-
-# Conditionally import pywhatkit if not running in a headless environment
-if os.environ.get('DISPLAY', '') != '':
-    import pywhatkit as kit
-else:
-    kit = None  # In headless mode, pywhatkit will not be available
 
 # Access your GCP credentials stored in Streamlit secrets
 gcp_credentials = {
     "type": "service_account",
     "project_id": st.secrets["GCP"]["GCP_PROJECT_ID"],
-    "private_key": st.secrets["GCP"]["GCP_PRIVATE_KEY"],
+    "private_key": st.secrets["GCP"]["GCP_PRIVATE_KEY"].replace("\\n", "\n"),
     "client_email": st.secrets["GCP"]["GCP_CLIENT_EMAIL"],
     "client_id": st.secrets["GCP"]["GCP_CLIENT_ID"],
     "auth_uri": st.secrets["GCP"]["GCP_AUTH_URI"],
     "token_uri": st.secrets["GCP"]["GCP_TOKEN_URI"],
     "auth_provider_x509_cert_url": st.secrets["GCP"]["GCP_AUTH_PROVIDER_X509_CERT_URL"],
-    "client_x509_cert_url": st.secrets["GCP"]["GCP_CLIENT_X509_CERT_URL"],
-    "universe_domain": st.secrets["GCP"].get("GCP_UNIVERSE_DOMAIN", None),
+    "client_x509_cert_url": st.secrets["GCP"]["GCP_CLIENT_X509_CERT_URL"]
 }
 
 # Authenticate with Google Sheets
@@ -60,26 +52,16 @@ def connect_to_sheet(spreadsheet_id, sheet_index=0):
 def add_appointment_to_sheet(sheet, name, services, date, time, contact, offer, total_amount, referred_phone="N.A", discount_amount=0, payout_status="Unpaid"):
     try:
         services_str = ", ".join(services)
-        whatsapp_contact = f"WhatsApp: +91{contact}"  # Format WhatsApp number
+        # Format WhatsApp number in the last column
+        whatsapp_contact = f"WhatsApp: +91{contact}"
         sheet.append_row([name, services_str, date, time, contact, offer, total_amount, referred_phone, discount_amount, payout_status, whatsapp_contact])
     except Exception as e:
         st.error(f"Error adding appointment to sheet: {e}")
 
-# Send WhatsApp message via pywhatkit
-def send_whatsapp_message(contact, message):
-    if kit:  # Only send WhatsApp message if pywhatkit is available
-        try:
-            contact_with_code = f"+91{contact}"  # Adjust the country code as needed
-            kit.sendwhatmsg_instantly(contact_with_code, message)
-            st.success(f"WhatsApp message sent to {contact}!")
-        except Exception as e:
-            st.error(f"Error sending WhatsApp message: {e}")
-    else:
-        st.warning("WhatsApp message sending is not supported in the current environment.")
-
+# Main application
 def main():
     st.title("Barber Management System")
-    spreadsheet_id = "1xUWgXbyIUWeEtZ3WcPKrgUbF-yH_ZCPH8PbPvtvqJsU"  # **UPDATE THIS**
+    spreadsheet_id = "1xUWgXbyIUWeEtZ3WcPKrgUbF-yH_ZCPH8PbPvtvqJsU"  # Update this
     sheet = connect_to_sheet(spreadsheet_id)
 
     services_data = [
@@ -168,34 +150,33 @@ def main():
         offer = st.selectbox("Avail Offer?", ["No", "Yes"])
         payout_status = st.selectbox("Payout Status", ["Unpaid", "Paid"])
         referred_phone = st.text_input("Referred Phone Number", value="N.A")
-        discount_percentage = st.number_input("Percentage of Services Availment", min_value=0, max_value=100, value=20)
+        discount_percentage = st.number_input("Discount Percentage", min_value=0, max_value=100, value=20)
         submit_button = st.form_submit_button(label="Add Appointment")
 
         if submit_button:
+            # Validation checks
             if not name or not services_selected or not time or not contact:
                 st.error("Please fill in all fields.")
                 return
             if not contact.isdigit() or len(contact) != 10:
                 st.error("Please enter a valid 10-digit phone number.")
                 return
-            total_amount = sum(service["amount"] for service in services_data if service["service"] in services_selected)
-            discount_amount = 0
-            if offer == "Yes" and referred_phone != "N.A":
-                discount_amount = (discount_percentage / 100) * total_amount
-                st.write(f"Discount Amount: {discount_amount} ")
+
+            # Calculate total amount and discount
+            total_amount = sum(
+                service["amount"] or 0 for service in services_data if service["service"] in services_selected
+            )
+            discount_amount = (discount_percentage / 100) * total_amount if offer == "Yes" else 0
+
             contact_with_code = f"+91{contact}"
             time_str = time.strftime("%H:%M")
             date_str = date.strftime("%Y-%m-%d")
-            add_appointment_to_sheet(sheet, name, services_selected, date_str, time_str, contact_with_code, offer, total_amount, referred_phone, discount_amount, payout_status)
-            message = (
-                f"Hello {name},\n\n"
-                "Thank you for visiting us at Nature's Beauty Salon! We hope you had an amazing experience with our services.\n"
-                "We'd love for you to leave us a great review on Google! "
-                "Your feedback helps us improve and lets others know about the excellent service we provide.\n\n"
-                "Looking forward to seeing you again!\n\n"
-                "Best regards,\nThe Salon Team"
+
+            # Add appointment to the sheet
+            add_appointment_to_sheet(
+                sheet, name, services_selected, date_str, time_str, contact_with_code,
+                offer, total_amount, referred_phone, discount_amount, payout_status
             )
-            send_whatsapp_message(contact, message)
             st.success(f"Appointment added successfully for {name}. Payout Status: {payout_status}")
 
     st.subheader("All Appointments")
@@ -205,8 +186,6 @@ def main():
             st.write("No appointments found.")
         else:
             df = pd.DataFrame(appointments)
-            if 'Payout Status' in df.columns:
-                df['Payout Status'] = df['Payout Status'].replace({'True': 'Paid', 'False': 'Unpaid'})
             st.table(df)
     except Exception as e:
         st.error(f"Error fetching appointments: {e}")
